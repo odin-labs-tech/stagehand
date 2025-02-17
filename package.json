@@ -30,7 +30,7 @@
     "lint": "npm run prettier && npm run eslint",
     "release": "npm run build && changeset publish",
     "release-canary": "npm run build && changeset version --snapshot && changeset publish --tag alpha",
-    "dev": "yarn dlx nodemon --watch lib --ignore lib/dom/build --ext ts,tsx --exec \"npm run build && yarn dlx yalc push\""
+    "dev": "yarn dlx nodemon --watch lib --ignore lib/dom/build --ext ts,tsx --exec \"npm run build\""
   },
   "files": [
     "dist/**",
