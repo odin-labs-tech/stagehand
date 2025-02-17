@@ -50,7 +50,17 @@ async function getBrowser(
   logger: (message: LogLine) => void,
   browserbaseSessionCreateParams?: Browserbase.Sessions.SessionCreateParams,
   browserbaseSessionID?: string,
+  browserContext?: { context: BrowserContext; contextPath: string },
 ): Promise<BrowserResult> {
+  // If a custom context is provided, return it directly
+  if (browserContext) {
+    return {
+      context: browserContext.context,
+      contextPath: browserContext.contextPath,
+      env: "LOCAL",
+    };
+  }
+
   if (env === "BROWSERBASE") {
     if (!apiKey) {
       logger({
@@ -266,7 +276,7 @@ async function getBrowser(
   }
 }
 
-async function applyStealthScripts(context: BrowserContext) {
+export async function applyStealthScripts(context: BrowserContext) {
   await context.addInitScript(() => {
     // Override the navigator.webdriver property
     Object.defineProperty(navigator, "webdriver", {
@@ -322,7 +332,6 @@ export class Stagehand {
 
   private apiKey: string | undefined;
   private projectId: string | undefined;
-  // We want external logger to accept async functions
   private externalLogger?: (logLine: LogLine) => void;
   private browserbaseSessionCreateParams?: Browserbase.Sessions.SessionCreateParams;
   public variables: { [key: string]: unknown };
@@ -333,6 +342,7 @@ export class Stagehand {
   private modelName: AvailableModel;
   private apiClient: StagehandAPI | undefined;
   public readonly selfHeal: boolean;
+  private browserContext?: { context: BrowserContext; contextPath: string };
 
   constructor(
     {
@@ -354,6 +364,7 @@ export class Stagehand {
       systemPrompt,
       useAPI,
       selfHeal = true,
+      browserContext,
     }: ConstructorParams = {
       env: "BROWSERBASE",
     },
@@ -390,6 +401,7 @@ export class Stagehand {
     this.userProvidedInstructions = systemPrompt;
     this.usingAPI = useAPI ?? false;
     this.modelName = modelName ?? DEFAULT_MODEL_NAME;
+    this.browserContext = browserContext;
 
     if (this.usingAPI && env === "LOCAL") {
       throw new Error("API mode can only be used with BROWSERBASE environment");
@@ -470,6 +482,7 @@ export class Stagehand {
         this.logger,
         this.browserbaseSessionCreateParams,
         this.browserbaseSessionID,
+        this.browserContext,
       ).catch((e) => {
         console.error("Error in init:", e);
         const br: BrowserResult = {

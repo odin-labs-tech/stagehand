@@ -31,6 +31,10 @@ export interface ConstructorParams {
    */
   useAPI?: boolean;
   selfHeal?: boolean;
+  browserContext?: {
+    context: BrowserContext;
+    contextPath: string;
+  };
 }
 
 export interface InitOptions {
